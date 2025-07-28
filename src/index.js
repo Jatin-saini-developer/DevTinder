@@ -10,7 +10,7 @@ app.use(express.json());
 
 // POST API
 app.post("/signUp", async (req, res, next) => {
-//   console.log(req.body);
+  //   console.log(req.body);
   try {
     validateSignUpData(req);
 
@@ -18,7 +18,6 @@ app.post("/signUp", async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     console.log(passwordHash);
-    
 
     const obj = new User({
       firstName,
@@ -43,6 +42,31 @@ app.get("/user", async (req, res) => {
     res.send(user);
   } catch {
     console.log("Error 69 ");
+  }
+});
+
+app.post("/logIn", async (req, res) => {
+  try {
+    const {email, password} = req.body;
+
+    const user = await User.findOne({email: email});
+
+    if(!user){
+      throw new Error("Email id is not present in DB");
+    };
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if(isPasswordValid){
+      res.send("User logged in successfully");
+    }else{
+      throw new Error("Password is incorrect");
+    };
+
+
+  } catch (err){
+    res.status(404).send(err.message)
+
   }
 });
 
